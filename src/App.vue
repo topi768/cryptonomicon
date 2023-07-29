@@ -160,7 +160,30 @@ export default {
       graph: []
     }
   },
+  created() {
+    const tickerData = localStorage.getItem('cryptonomicon-list')
+    if (tickerData) {
+      this.tickers = JSON.parse(tickerData)
+      this.tickers.forEach(ticker => {
+        this.subscribeToUpdate(ticker.name)
+      })
+    }
+  },
+
   methods: {
+    subscribeToUpdate(tickerName){
+      setInterval(async ()=> {
+        const f = await fetch('https://min-api.cryptocompare.com/data/price?fsym=' + tickerName + '&tsyms=USD&api_key=bd8fb58e04e6544108e3f28d8fa8980f074d594915a5ddffa84c265bdf485b0b')
+        const data = await f.json()
+        // currentTicker.price =  data.USD > 1 ? data.USD.toFixed(2) :  data.USD.toPrecision(2) не рабоатет так реактивнгость!!
+        this.tickers.find(t => t.name == tickerName).price = data.USD > 1 ? data.USD.toFixed(2) :  data.USD.toPrecision(2)
+
+        if(this.sel?.name == tickerName) {
+          this.graph.push(data.USD)
+        }
+      }, 5000)
+      this.ticker = ''
+    },
     add(){
       const currentTicker = {
         name: this.ticker,
@@ -168,17 +191,10 @@ export default {
       }
 
       this.tickers.push(currentTicker)
-      setInterval(async ()=> {
-        const f = await fetch('https://min-api.cryptocompare.com/data/price?fsym=' + currentTicker.name + '&tsyms=USD&api_key=bd8fb58e04e6544108e3f28d8fa8980f074d594915a5ddffa84c265bdf485b0b')
-        const data = await f.json()
-        // currentTicker.price =  data.USD > 1 ? data.USD.toFixed(2) :  data.USD.toPrecision(2) не рабоатет так реактивнгость!!
-        this.tickers.find(t => t.name == currentTicker.name).price = data.USD > 1 ? data.USD.toFixed(2) :  data.USD.toPrecision(2)
 
-        if(this.sel?.name == currentTicker.name) {
-          this.graph.push(data.USD)
-        }
-      }, 5000)
-      this.ticker = ''
+      localStorage.setItem('cryptonomicon-list', JSON.stringify(this.tickers) )
+      this.subscribeToUpdate(currentTicker.name)
+
     },
     select(ticker) {
       this.sel = ticker
@@ -201,7 +217,7 @@ export default {
   }
 }
 import "tailwindcss/tailwind.css"
-</script>
+      </script>
 
 <style src='./app.css'>
 
