@@ -149,7 +149,23 @@
 </template>
 
 <script>
-import {subscribeToTicker} from './api.js'
+import { subscribeToTicker, unsubscribeFromTicker } from "./api";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export default {
   name: "App",
 
