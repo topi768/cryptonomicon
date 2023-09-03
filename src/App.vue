@@ -78,8 +78,7 @@
                 {{ t.name }} - USD
               </dt>
               <dd class="mt-1 text-3xl font-semibold text-gray-900">
-                {{ t.price }}
-                <!-- {{ formatPrice(t.price) }} -->
+                {{ formatPrice(t.price) }}
               </dd>
             </div>
             <div class="w-full border-t border-gray-200"></div>
@@ -139,7 +138,7 @@
               <path
                 d="M436.896,74.869c-99.84-99.819-262.208-99.819-362.048,0c-99.797,99.819-99.797,262.229,0,362.048    c49.92,49.899,115.477,74.837,181.035,74.837s131.093-24.939,181.013-74.837C536.715,337.099,536.715,174.688,436.896,74.869z     M361.461,331.317c8.341,8.341,8.341,21.824,0,30.165c-4.16,4.16-9.621,6.251-15.083,6.251c-5.461,0-10.923-2.091-15.083-6.251    l-75.413-75.435l-75.392,75.413c-4.181,4.16-9.643,6.251-15.083,6.251c-5.461,0-10.923-2.091-15.083-6.251    c-8.341-8.341-8.341-21.845,0-30.165l75.392-75.413l-75.413-75.413c-8.341-8.341-8.341-21.845,0-30.165    c8.32-8.341,21.824-8.341,30.165,0l75.413,75.413l75.413-75.413c8.341-8.341,21.824-8.341,30.165,0    c8.341,8.32,8.341,21.824,0,30.165l-75.413,75.413L361.461,331.317z"
                 fill="#718096"
-                exchangeData-original="#000000"
+                data-original="#000000"
               ></path>
             </g>
           </svg>
@@ -150,22 +149,22 @@
 </template>
 
 <script>
+// [x] 6. Наличие в состоянии ЗАВИСИМЫХ ДАННЫХ | Критичность: 5+
+// [ ] 4. Запросы напрямую внутри компонента (???) | Критичность: 5
+// [ ] 2. При удалении остается подписка на загрузку тикера | Критичность: 5
+// [ ] 5. Обработка ошибок API | Критичность: 5
+// [ ] 3. Количество запросов | Критичность: 4
+// [x] 8. При удалении тикера не изменяется localStorage | Критичность: 4
+// [x] 1. Одинаковый код в watch | Критичность: 3
+// [ ] 9. localStorage и анонимные вкладки | Критичность: 3
+// [ ] 7. График ужасно выглядит если будет много цен | Критичность: 2
+// [ ] 10. Магические строки и числа (URL, 5000 миллисекунд задержки, ключ локал стораджа, количество на странице) |  Критичность: 1
+
+// Параллельно
+// [x] График сломан если везде одинаковые значения
+// [x] При удалении тикера остается выбор
+
 import { subscribeToTicker, unsubscribeFromTicker } from "./api";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 export default {
   name: "App",
@@ -183,7 +182,6 @@ export default {
       page: 1
     };
   },
-
 
   created() {
     const windowData = Object.fromEntries(
@@ -208,11 +206,9 @@ export default {
 
     const tickersData = localStorage.getItem("cryptonomicon-list");
 
-
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
       this.tickers.forEach(ticker => {
-
         subscribeToTicker(ticker.name, newPrice =>
           this.updateTicker(ticker.name, newPrice)
         );
@@ -264,13 +260,14 @@ export default {
     }
   },
 
-
   methods: {
-
     updateTicker(tickerName, price) {
       this.tickers
         .filter(t => t.name === tickerName)
         .forEach(t => {
+          if (t === this.selectedTicker) {
+            this.graph.push(price);
+          }
           t.price = price;
         });
     },
@@ -282,8 +279,6 @@ export default {
       return price > 1 ? price.toFixed(2) : price.toPrecision(2);
     },
 
-
-
     add() {
       const currentTicker = {
         name: this.ticker,
@@ -293,7 +288,6 @@ export default {
       this.tickers = [...this.tickers, currentTicker];
       this.ticker = "";
       this.filter = "";
-
       subscribeToTicker(currentTicker.name, newPrice =>
         this.updateTicker(currentTicker.name, newPrice)
       );
@@ -312,8 +306,6 @@ export default {
       unsubscribeFromTicker(tickerToRemove.name);
     }
   },
-
-
 
   watch: {
     selectedTicker() {
@@ -347,8 +339,3 @@ export default {
 };
 import "tailwindcss/tailwind.css"
 </script>
-
-
-<style src='./app.css'>
-
-</style>
